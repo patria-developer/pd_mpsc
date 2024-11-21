@@ -29,12 +29,23 @@ pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
 
 #[cfg(test)]
 mod channel_tests {
+    use std::thread;
+
     use super::*;
 
     #[test]
     fn send_single_thread() {
         let (mut tx, mut rx) = channel();
         tx.send(26);
+        assert_eq!(rx.recv(), 26);
+    }
+
+    #[test]
+    fn send_multi_thread() {
+        let (mut tx, mut rx) = channel();
+        thread::spawn(move || {
+            tx.send(26);
+        });
         assert_eq!(rx.recv(), 26);
     }
 }
