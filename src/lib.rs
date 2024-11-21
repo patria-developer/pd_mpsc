@@ -1,6 +1,6 @@
 use std::{
     collections::VecDeque,
-    sync::{Arc, Mutex},
+    sync::{Arc, Condvar, Mutex},
 };
 
 pub struct Sender<T> {
@@ -19,19 +19,28 @@ pub struct Receiver<T> {
 }
 
 impl<T> Receiver<T> {
-    fn recv(&mut self) -> Option<T> {
+    fn recv(&mut self) -> T {
         let mut queue = self.inner.queue.lock().unwrap();
-        queue.pop_front()
+        loop {
+            match queue.pop_front() {
+                Some(value) => return value,
+                None => {
+                    queue = self.inner.available.wait(queue).unwrap();
+                }
+            }
+        }
     }
 }
 
 struct Inner<T> {
     queue: Mutex<VecDeque<T>>,
+    available: Condvar,
 }
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let inner = Inner {
         queue: Mutex::new(VecDeque::default()),
+        available: Condvar::new(),
     };
     let inner = Arc::new(inner);
     (
