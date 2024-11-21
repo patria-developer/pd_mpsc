@@ -47,12 +47,28 @@ mod channel_tests {
     }
 
     #[test]
-    fn send_multi_thread() {
+    fn send_different_thread() {
         let (mut tx, mut rx) = channel();
         thread::spawn(move || {
             tx.send(26);
         });
         assert_eq!(rx.recv(), Some(26));
+    }
+
+    #[test]
+    fn send_multi_thread() {
+        let (tx, mut rx) = channel();
+        for i in 0..10 {
+            let mut tx = tx.clone();
+            thread::spawn(move || {
+                tx.send(i);
+            });
+        }
+
+        for _ in 0..10 {
+            let j = rx.recv().unwrap();
+            assert!(0 <= j && j < 10);
+        }
     }
 
     #[test]
