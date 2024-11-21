@@ -27,6 +27,9 @@ Shared usage:
 use std::thread;
 use pd_mpsc::channel;
 
+// Create a shared channel that can be sent along from many threads
+// where tx is the sending half (tx for transmission), and rx is the receiving
+// half (rx for receiving).
 let (tx, mut rx) = channel();
 for i in 0..10 {
     let mut tx = tx.clone();
