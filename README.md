@@ -27,16 +27,16 @@ Shared usage:
 use std::thread;
 use pd_mpsc::channel;
 
-let (mut tx, mut rx) = channel();
+let (tx, mut rx) = channel();
 for i in 0..10 {
-    let tx = tx.clone();
+    let mut tx = tx.clone();
     thread::spawn(move || {
-        tx.send(100);
+        tx.send(i);
     });
 }
 
 for _ in 0..10 {
-    let j = rx.recv();
+    let j = rx.recv().unwrap();
     assert!(0 <= j && j < 10);
 }
 ```
