@@ -28,3 +28,11 @@ impl<T> Clone for Receiver<T> {
         }
     }
 }
+
+impl<T> Iterator for Receiver<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.recv()
+    }
+}
