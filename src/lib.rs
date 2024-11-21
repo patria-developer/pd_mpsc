@@ -1,41 +1,15 @@
+mod receiver;
+mod sender;
+mod shared;
+
 use std::{
     collections::VecDeque,
     sync::{Arc, Condvar, Mutex},
 };
 
-pub struct Sender<T> {
-    inner: Arc<Inner<T>>,
-}
-
-impl<T> Sender<T> {
-    fn send(&mut self, value: T) {
-        let mut queue = self.inner.queue.lock().unwrap();
-        queue.push_back(value);
-    }
-}
-
-pub struct Receiver<T> {
-    inner: Arc<Inner<T>>,
-}
-
-impl<T> Receiver<T> {
-    fn recv(&mut self) -> T {
-        let mut queue = self.inner.queue.lock().unwrap();
-        loop {
-            match queue.pop_front() {
-                Some(value) => return value,
-                None => {
-                    queue = self.inner.available.wait(queue).unwrap();
-                }
-            }
-        }
-    }
-}
-
-struct Inner<T> {
-    queue: Mutex<VecDeque<T>>,
-    available: Condvar,
-}
+use receiver::Receiver;
+use sender::Sender;
+use shared::Inner;
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let inner = Inner {
