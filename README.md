@@ -24,6 +24,9 @@ assert_eq!(rx.recv(), 100);
 Shared usage:
 
 ```rust
+use std::thread;
+use pd_mpsc::channel;
+
 let (mut tx, mut rx) = channel();
 for i in 0..10 {
     let tx = tx.clone();
