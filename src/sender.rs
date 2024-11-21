@@ -10,5 +10,7 @@ impl<T> Sender<T> {
     pub fn send(&mut self, value: T) {
         let mut queue = self.inner.queue.lock().unwrap();
         queue.push_back(value);
+        drop(queue);
+        self.inner.available.notify_one();
     }
 }

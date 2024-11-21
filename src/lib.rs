@@ -26,3 +26,15 @@ pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
         },
     )
 }
+
+#[cfg(test)]
+mod channel_tests {
+    use super::*;
+
+    #[test]
+    fn send_single_thread() {
+        let (mut tx, mut rx) = channel();
+        tx.send(26);
+        assert_eq!(rx.recv(), 26);
+    }
+}
