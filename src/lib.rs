@@ -7,22 +7,27 @@ use std::{
     sync::{Arc, Condvar, Mutex},
 };
 
-use receiver::Receiver;
-use sender::Sender;
-use shared::Inner;
+use shared::{Inner, Shared};
+
+pub use receiver::Receiver;
+pub use sender::Sender;
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
     let inner = Inner {
-        queue: Mutex::new(VecDeque::default()),
+        queue: VecDeque::default(),
+        senders: 1,
+    };
+    let shared = Shared {
+        inner: Mutex::new(inner),
         available: Condvar::new(),
     };
-    let inner = Arc::new(inner);
+    let shared = Arc::new(shared);
     (
         Sender {
-            inner: inner.clone(),
+            shared: shared.clone(),
         },
         Receiver {
-            inner: inner.clone(),
+            shared: shared.clone(),
         },
     )
 }
@@ -37,7 +42,7 @@ mod channel_tests {
     fn send_single_thread() {
         let (mut tx, mut rx) = channel();
         tx.send(26);
-        assert_eq!(rx.recv(), 26);
+        assert_eq!(rx.recv(), Some(26));
     }
 
     #[test]
@@ -46,6 +51,13 @@ mod channel_tests {
         thread::spawn(move || {
             tx.send(26);
         });
-        assert_eq!(rx.recv(), 26);
+        assert_eq!(rx.recv(), Some(26));
+    }
+
+    #[test]
+    fn closed_tx() {
+        let (tx, mut rx) = channel::<()>();
+        drop(tx);
+        assert_eq!(rx.recv(), None);
     }
 }

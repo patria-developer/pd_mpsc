@@ -4,6 +4,11 @@ use std::{
 };
 
 pub struct Inner<T> {
-    pub queue: Mutex<VecDeque<T>>,
+    pub queue: VecDeque<T>,
+    pub senders: usize,
+}
+
+pub struct Shared<T> {
+    pub inner: Mutex<Inner<T>>,
     pub available: Condvar,
 }
