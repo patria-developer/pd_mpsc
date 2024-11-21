@@ -1,6 +1,7 @@
-# 🚌 Multi Producer Single Consumer Channel
+# 🚌 MPSC Channel
 
-This module provides message-based communication over channels
+Multi-producer, single-consumer FIFO queue communication.
+This module provides message-based communication over channels.
 
 A `Sender` is used to send data to a `Receiver`. Both senders are clone-able (multi-producer) such that many threads can send simultaneously to one receiver (single-consumer).
 
